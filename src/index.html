@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Chat App</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<style>
+		body {
+			background: #0b0027;
+			color: white;
+		}
+		#chat form {
+		    border: 9px solid #f1f1f1;
+		    border-radius: 68px;
+		    width: 50%;
+    		margin: 50px auto;
+		}
+		#chat label {
+			display: block;
+			text-align: center;
+			line-height: 150%;
+			font-size: 20px;
+			margin-top: 16px;
+			margin-bottom: 11px;
+		}
+		#chat .form-group button {
+			margin-top: 30px;
+		}
+
+		#chat input[type=text], input[type=userName] {
+		   	display: block;
+			text-align: center;
+			line-height: 150%;
+			font-size: 20px;
+			width: 50%;
+    		margin: 0 auto;
+		}
+		#chat select{
+			background: #3b8ec2;
+		   -webkit-appearance: none;
+		   -moz-appearance: none;
+		   appearance: none;
+		    border: 3px solid;
+		    border-radius: 20px;
+		    text-align-last: center;
+		    color: white;
+  			display: block;
+			line-height: 150%;
+			font-size: 20px;
+			width: 16%;
+    		margin: 0 auto;
+    		outline:none;
+		}
+		#chat select option {
+			color: red;
+			border-radius: 25px;
+			background: white;
+			outline:none;
+		}	
+		#chat ::-webkit-input-placeholder { /* Chrome */
+  			color: grey;
+  			font-size: 12px;
+  			font-weight: bold;
+  			font-style: italic;
+		}
+		#allUsers {
+			float: left;
+			width: 50%;
+			padding-left: 10%;
+			padding-right: 10%;
+			padding-top: 50px;
+		}
+		#allUsers .list-group {
+			max-height: 399px;
+    		overflow-y: scroll;
+		}
+		#activeUser {
+			padding-top: 50px;
+			float: right;
+			width: 50%;
+		}
+		#activeUser #unos {
+			margin-right: 40px;
+		}
+		#activeUser input {
+			width: 80%;
+			height: 35px;
+			text-align: center;
+    		margin: 7px auto;
+    		border: 2px grey solid;
+    		border-radius: 20px;
+    		color: #0b0027;
+    		outline:none;
+		}
+		#activeUser #unos textarea {
+			width: 100%;
+			height: 300px;
+			max-height: 200px;
+			margin-top: 11px;
+			border: 2px grey solid;
+			border-radius: 12px;
+			color: #0b0027;
+			outline:none;
+		}
+		#allUsers .list-group-item .list-group-item-action {
+			margin-bottom: 5px;
+		}
+		#profil button {
+			width: 17%;
+			float: right;
+			margin: 5px auto;
+		}
+		#activeUser #profil #primaoci {
+			width: 50%;
+			margin: 0 auto;
+			border-radius: 25px;
+			margin-bottom: -5px;
+			padding-right: 5px;
+			padding-top: 10px;
+			padding-bottom: 10px;
+			padding-left: 5px;
+			border: 2px #7126e2 solid;
+		}
+		#activeUser #profil #primaoci span {
+			border: 2px solid rgb(98, 167, 8)!important;
+			padding-top: 0px;
+			padding-bottom: 0px;
+			padding-left: 2px;
+			padding-right: 2px;
+			border-radius: 5px;
+			margin-right: 3px;
+			margin-bottom: 5px;
+		}
+		#allUsers button {
+			color: red;
+			font-weight: bold;
+			font-size: 16px;
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+<div class="body">
+	<div id="chat">
+		<div class="modal-header">
+          <p style="text-align: left; font-weight: bolder; font-size: 35px;" v-show="title"><a href="/">{{ title }}</a>
+          <span style="font-weight: bolder; font-size: 25px; float: right;" v-show="this.name">{{ this.name }}</span></p>
+        </div>
+		<form v-show="!connected" id="login" v-on:submit="login">
+			<label id="lab1"><b>Ime i prezime:</b></label>
+			
+			 <div class="form-group">
+				<input type="userName" class="form-control input-lg" placeholder="Unesite Vaše ime i prezime" v-model="name">
+			</div>
+			<label><b>Vas pol:</b></label>
+			 <div class="form-group">
+			 		
+					<select v-model="gender">
+				  		<option value="male" selected>male</option>
+				  		<option value="female">female</option>
+					</select>
+			</div>
+			 <div class="form-group">
+				<button class="btn btn-primary btn-lg center-block" v-on:click="changeTitle">Login</button>
+			</div>
+		</form>
+		<div v-show="connected">
+			<div id="allUsers">
+				<h1 style="text-align: center;">Online:</h1>
+				<div class="list-group" v-show="users" id="users">
+					  <button type="button" class="list-group-item list-group-item-action" v-show="user" v-on:click="openTA(user)" v-for="(user, index) in users" v-if="user !== this.user">
+					    {{ user.name }}
+					  </button>
+				</div>
+			</div>
+			<div id="activeUser">
+				<div id="profil" v-show="preview">
+				<label style="margin-bottom: 0px!important; font-style: italic;font-size: 12px; text-align: center;"><small>-- Primaoci poruke --</small></label>
+					<div id="primaoci"> 
+						<span v-show="preview" v-on:click="rmFromRecipients(recipient)" v-for="(recipient, index) in recipients"><b> {{ recipient.name }} </b></span>
+					</div>
+					<div id="unos">
+						<textarea placeholder="Istorija razgovora.." v-show="chatHistory" readonly>{{ chatHistory }}</textarea>
+						<input placeholder="Vaša poruka" v-model="message"> <button class="btn btn-primary" v-on:click="send">Send <span class="glyphicon glyphicon-send"></span></button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.2/socket.io.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.4/vue.js"></script>
+	<script>
+		var socket = io();
+
+		var app = new Vue ({
+			el: '#chat',
+			data: {
+				preview: false,
+				title: 'DOBRODOSLI',
+				message: '',
+				chatHistory: ' ',
+				errName: '',
+				errGender: '',
+				gender: '',
+				name: '',
+				to: '',
+				recipients: [],
+				connected: false,
+				users: []
+			},
+			methods: {
+				send: function(e){
+						if(this.message != ''){
+						var str = this.name;
+						//socket.emit('chat.message', this.message)
+						this.chatHistory = this.chatHistory == ' ' ? str.toUpperCase() + ':  ' + this.message + '\n' : this.chatHistory + str.toUpperCase() + ':  ' + this.message + '\n';
+						//this.chatHistory = this.chatHistory + str.toUpperCase() + ':  ' + this.message + '\n';
+						console.log(this);
+						console.log(this.id);
+						socket.emit('chat.send', {to: this.to.id, gender: this.to.gender ,message: this.message });
+						this.message = '';
+						e.preventDefault();
+					}
+				},
+				login: function(e){
+					if(this.gender != '' & this.name != ''){
+						socket.emit('chat.login', { name: this.name, gender: this.gender });
+						this.connected = true;
+						this.errName = '';
+						this.errGender = '';
+						e.preventDefault();
+					}
+				},
+				openTA: function(user){
+					var index = this.recipients.indexOf(user);
+					if (index > -1) {
+    					this.recipients.splice(index, 1);
+    					if(this.recipients.length == 0){
+    						this.preview = false;
+    					}
+					} else {
+						this.to = user;
+						this.recipients.push(user);
+						this.preview = true;
+						e.preventDefault();
+					}
+				},
+				changeTitle: function(){
+					if(this.title == 'DOBRODOSLI') {
+						this.title = 'Chat Aplikacija';
+					} else {
+						this.title = 'DOBRODOSLI';
+					}
+				},
+				rmFromRecipients: function(recipient){
+					var index = this.recipients.indexOf(recipient);
+					if (index > -1) {
+						if (confirm('Jeste li sigurni da zelite da izbacite ' + recipient.name + ' iz razgovora?')) {
+   							 this.recipients.splice(index, 1);
+    						if(this.recipients.length == 0){
+    							this.preview = false;
+    						}
+						} 
+					}
+				},
+			}
+		});
+		socket.on('chat.privateMessage', function() {
+			socket.emit.to('user.id', this.message);
+		});
+
+		socket.on('chat.users', function(usersList) {
+			app.users = usersList;
+		});
+		socket.on('chat.sendPrivateMessage', function(message) {
+			app.to = user;
+			app.recipients.push(user);
+			app.preview = true
+			app.recMess = message;
+			app.chatHistory = app.chatHistory + message;
+		});
+
+	</script>
+	</div>
+</body>
+</html>
